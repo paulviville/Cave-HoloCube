@@ -29,8 +29,10 @@ export default class MultiScreenViewer {
 		this.#camera = new THREE.PerspectiveCamera( 70, 800/600, 0.1, 1 );
 		this.#camera.up.copy(worldUp);
 		this.#camera.position.set( -2, -4, 3 );
-		this.#camera.lookAt(new THREE.Vector3(0, 0, 2));
+		this.#camera.lookAt(new THREE.Vector3(0, 0, 0));
 		this.#camera.updateMatrixWorld()
+
+		this.#worker.postMessage({ type: "monitorCamera", position: this.#camera.position.toArray(), quaternion: this.#camera.quaternion.toArray()});
 
 		const controls = new OrbitControls(this.#camera, canvas);
 		controls.addEventListener("change", () => {

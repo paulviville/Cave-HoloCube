@@ -1,4 +1,4 @@
-import * as THREE from "./three/three.module.js";
+import * as THREE from "../three/three.module.js";
 
 const vertexShader = `
 	out vec2 vUv;

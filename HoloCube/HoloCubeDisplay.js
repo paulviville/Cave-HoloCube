@@ -1,6 +1,6 @@
 import DepthMaterial from "./DepthMaterial.js";
 import PickingMaterial from "./PickingMaterial.js";
-import * as THREE from "./three/three.module.js";
+import * as THREE from "../three/three.module.js";
 
 export default class HoloCubeDisplay {
 	#holocube;
