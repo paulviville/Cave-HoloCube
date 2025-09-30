@@ -27,6 +27,9 @@ scene.background = new THREE.Color(0Xeeeeee);
 const camera = new THREE.PerspectiveCamera( 50, 4/3, 0.01, 50 );
 camera.position.set( 0, 0, 6 );
 
+const trackedCamera = new THREE.PerspectiveCamera( 50, 1.5, 0.01, 0.3 );
+const trackedCameraHelper = new THREE.CameraHelper(trackedCamera);
+scene.add(trackedCameraHelper);
 
 const PDS = Math.sqrt(2) * 1.8;
 const t = new THREE.Vector3(1, 1, 0).normalize().multiplyScalar(2.25);
@@ -73,6 +76,13 @@ function initRenderer ( canvas ) {
 	renderer = new THREE.WebGLRenderer({ canvas: canvas });
 
 	renderer.setAnimationLoop( () => {
+		const head = vrpnController.head;
+		console.log(head)
+		trackedCamera.position.copy(head.position);
+		trackedCamera.rotation.setFromQuaternion(head.rotation);
+		trackedCamera.updateProjectionMatrix();
+		trackedCamera.updateWorldMatrix();
+		trackedCameraHelper.update();
 		renderer.render(scene, camera);
 	})
 }
