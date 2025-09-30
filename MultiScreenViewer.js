@@ -1,0 +1,45 @@
+import * as THREE from "./three/three.module.js";
+import { OrbitControls } from "./three/controls/OrbitControls.js";
+
+export default class MultiScreenViewer {
+	#worker;
+	#camera;
+
+	constructor ( ) {
+		console.log( `MultiScreenViewer - constructor` );
+
+		window.addEventListener( "beforeunload", this.#beforeUnload.bind( this ) );
+		
+		this.#worker = new Worker( "./renderWorker.js", { type: "module" } );
+		this.#worker.addEventListener( "error", ( event ) => { console.log( "worker error", event ); });
+	
+		this.#initializeMainWindow( );
+	}
+
+	#initializeMainWindow ( ) {
+		const canvas = document.createElement( "canvas" );
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		document.body.appendChild( canvas );
+
+		const offScreenCanvas = canvas.transferControlToOffscreen( );
+		this.#worker.postMessage({ type: "monitorCanvas", canvas: offScreenCanvas }, [offScreenCanvas] );
+
+		const worldUp = new THREE.Vector3(0, 0, 1);
+		this.#camera = new THREE.PerspectiveCamera( 70, 800/600, 0.1, 1 );
+		this.#camera.up.copy(worldUp);
+		this.#camera.position.set( -2, -4, 3 );
+		this.#camera.lookAt(new THREE.Vector3(0, 0, 2));
+		this.#camera.updateMatrixWorld()
+
+		const controls = new OrbitControls(this.#camera, canvas);
+		controls.addEventListener("change", () => {
+			this.#worker.postMessage({ type: "monitorCamera", position: this.#camera.position.toArray(), quaternion: this.#camera.quaternion.toArray()});
+			
+		})
+	}
+
+	#beforeUnload ( ) {
+
+	}
+}
