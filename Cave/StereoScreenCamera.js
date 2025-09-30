@@ -19,7 +19,9 @@ export default class StereoScreenCamera {
 	constructor ( screen ) {
 		this.#screen = screen;
 		this.#left.matrixAutoUpdate = false;
+		this.#left.layers.enable(1);
 		this.#right.matrixAutoUpdate = false;
+		this.#right.layers.enable(2);
 		this.#computeScreenSpace();
 	}
 

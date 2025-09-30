@@ -165,9 +165,20 @@ function initRenderer ( canvas ) {
 
 
 
-
+		renderer.setViewport(0, 0, 500, 500);
+		renderer.setScissor(0, 0, 500, 500);
+		renderer.setScissorTest(true);
 		renderer.render(scene, camera);
-
+		renderer.setViewport(500, 0, 500, 500);
+		renderer.setScissor(500, 0, 500, 500);
+				// renderer.setScissor(0, 0, 1450, 950);
+		// renderer.setScissorTest(true);
+		renderer.render(scene, camera);
+		renderer.setViewport(1000, 0, 500, 500);
+		renderer.setScissor(1000, 0, 500, 500);
+				// renderer.setScissor(0, 0, 1450, 950);
+		// renderer.setScissorTest(true);
+		renderer.render(scene, camera);
 
 	})
 }
