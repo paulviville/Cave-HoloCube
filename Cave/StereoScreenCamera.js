@@ -9,6 +9,8 @@ export default class StereoScreenCamera {
 	#left = new THREE.PerspectiveCamera();
 	#right = new THREE.PerspectiveCamera();
 
+	#leftEye = new THREE.Vector3();
+	#rightEye = new THREE.Vector3();
 	/// Screen Space Axes
 	#ssX = new THREE.Vector3();
 	#ssY = new THREE.Vector3();
@@ -33,6 +35,14 @@ export default class StereoScreenCamera {
 		return this.#right;
 	}
 
+	get leftEye ( ) {
+		return this.#leftEye;
+	}
+
+	get rightEye ( ) {
+		return this.#rightEye;
+	}
+	
 	get eyeSeperation ( ) {
 		return this.#eyeSeparation;
 	} 
@@ -47,6 +57,8 @@ export default class StereoScreenCamera {
 
 		leftEye.applyMatrix4(headMatrix);
 		rightEye.applyMatrix4(headMatrix);
+		this.#leftEye.copy(leftEye);
+		this.#rightEye.copy(rightEye);
 
 		const leftMatrices = this.#eyeMatrices(leftEye);
 		const rightMatrices = this.#eyeMatrices(rightEye);

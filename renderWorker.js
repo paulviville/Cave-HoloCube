@@ -23,7 +23,14 @@ function handleMessage ( message ) {
 	if(message.data.type === "monitorCamera") {
 		updateCamera(message.data.position, message.data.quaternion);
 	}
-	
+	if(message.data.type === "caveCanvas") {
+		console.log("caveCanvas")
+		initCaveRenderer(message.data.canvas);
+	}
+	if(message.data.type === "caveCanvasResize") {
+		console.log("caveCanvasResize")
+		caveCanvasResize(message.data.width, message.data.height);
+	}
 }
 
 const scene = new THREE.Scene();
@@ -65,7 +72,7 @@ const screens = [
 ]
 
 const cave = new Cave(screens);
-const stereoCamera = cave.stereoScreenCameras[0];
+const stereoCameras = cave.stereoScreenCameras;
 const caveHelper = new CaveHelper(cave);
 scene.add(caveHelper)
 
@@ -124,13 +131,8 @@ scene.add(holoCubeDisplayR.screens);
 holoCubeDisplayL.setScreenLayers(1);
 holoCubeDisplayR.setScreenLayers(2);
 
-
-camera.layers.enable(1);
-camera.layers.enable(2);
-
-
-
 let renderer = undefined;
+let renderLeft = true;
 
 function initRenderer ( canvas ) {
 	renderer = new THREE.WebGLRenderer({ canvas: canvas });
@@ -148,10 +150,10 @@ function initRenderer ( canvas ) {
 		caveHelper.updateStereoScreenCameraHelpers();
 
 
-		holoCube.computeCameraMatrices( stereoCamera.left.position, camerasL );
-		holoCube.computeCameraMatrices( stereoCamera.right.position, camerasR );
-		holoCubeDisplayL.updateScreens( stereoCamera.left.position );
-		holoCubeDisplayR.updateScreens( stereoCamera.right.position );
+		holoCube.computeCameraMatrices( stereoCameras[0].leftEye, camerasL );
+		holoCube.computeCameraMatrices( stereoCameras[0].rightEye, camerasR );
+		holoCubeDisplayL.updateScreens( stereoCameras[0].leftEye );
+		holoCubeDisplayR.updateScreens( stereoCameras[0].rightEye );
 		
 		for( const face of ["x", "y", "z"] ) {
 			renderer.setRenderTarget( renderTargetsL[face] );
@@ -164,22 +166,48 @@ function initRenderer ( canvas ) {
 		renderer.setRenderTarget( null );
 
 
+		if(renderLeft) {
+			camera.layers.enable(1);
+			camera.layers.disable(2);
+		}
+		else {
+			camera.layers.enable(2);
+			camera.layers.disable(1);
+		}
+		renderLeft = !renderLeft;
 
-		renderer.setViewport(0, 0, 500, 500);
-		renderer.setScissor(0, 0, 500, 500);
-		renderer.setScissorTest(true);
-		renderer.render(scene, camera);
-		renderer.setViewport(500, 0, 500, 500);
-		renderer.setScissor(500, 0, 500, 500);
-				// renderer.setScissor(0, 0, 1450, 950);
-		// renderer.setScissorTest(true);
-		renderer.render(scene, camera);
-		renderer.setViewport(1000, 0, 500, 500);
-		renderer.setScissor(1000, 0, 500, 500);
-				// renderer.setScissor(0, 0, 1450, 950);
-		// renderer.setScissorTest(true);
 		renderer.render(scene, camera);
 
+	})
+}
+
+let caveRenderer = undefined;
+let caveCanvas = undefined;
+function initCaveRenderer ( canvas ) {
+	caveCanvas = canvas;
+	caveRenderer = new THREE.WebGLRenderer({ canvas: canvas });
+	caveRenderer.setScissorTest(true);
+	caveRenderer.setAnimationLoop( () => {
+		
+		for( const face of ["x", "y", "z"] ) {
+			caveRenderer.setRenderTarget( renderTargetsL[face] );
+			caveRenderer.render( remoteScene, camerasL[face] );
+			caveRenderer.setRenderTarget( renderTargetsR[face] );
+			caveRenderer.render( remoteScene, camerasR[face] );
+		}
+		caveRenderer.setRenderTarget( null );
+
+
+		const side = renderLeft ? "left" : "right";
+		const viewWidth = canvas.width / 3;
+		const viewHeight = canvas.height;
+
+
+		for( let i = 0; i < 3; ++i ) {
+			caveRenderer.setViewport(i * viewWidth, 0, viewWidth, viewHeight);
+			caveRenderer.setScissor(i * viewWidth, 0, viewWidth, viewHeight);
+			caveRenderer.render(scene, stereoCameras[i][side]);
+		}
 	})
 }
 
@@ -187,6 +215,11 @@ function updateCamera ( position, quaternion ) {
 	camera.position.fromArray(position);
 	camera.quaternion.fromArray(quaternion);
 	camera.updateMatrixWorld();
+}
+
+function caveCanvasResize ( width, height ) {
+	console.log(width, height);
+	caveCanvas
 }
 
 

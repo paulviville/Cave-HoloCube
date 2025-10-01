@@ -1,9 +1,11 @@
 import * as THREE from "./three/three.module.js";
 import { OrbitControls } from "./three/controls/OrbitControls.js";
+import ScreenWindow from "./Cave/ScreenWindow.js";
 
 export default class MultiScreenViewer {
 	#worker;
 	#camera;
+	#caveWindow;
 
 	constructor ( ) {
 		console.log( `MultiScreenViewer - constructor` );
@@ -14,6 +16,7 @@ export default class MultiScreenViewer {
 		this.#worker.addEventListener( "error", ( event ) => { console.log( "worker error", event ); });
 	
 		this.#initializeMainWindow( );
+		this.#initializeCaveWindow( );
 	}
 
 	#initializeMainWindow ( ) {
@@ -41,7 +44,21 @@ export default class MultiScreenViewer {
 		})
 	}
 
-	#beforeUnload ( ) {
+	#initializeCaveWindow ( ) {
+		this.#caveWindow = new ScreenWindow({
+			onLoad: ( ) => {
+				console.log(this.#caveWindow.canvas)
+				const offScreenCanvas = this.#caveWindow.canvas.transferControlToOffscreen( );
+				this.#worker.postMessage({ type: "caveCanvas", canvas: offScreenCanvas }, [offScreenCanvas] );
+			},
+			onResize: ( ) => {
+				this.#worker.postMessage({ type: "caveCanvasResize", width: this.#caveWindow.width, height: this.#caveWindow.height } );
+			}
+		});
+		this.#caveWindow.open();
+	}
 
+	#beforeUnload ( ) {
+		this.#caveWindow.close();
 	}
 }
