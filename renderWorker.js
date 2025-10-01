@@ -219,7 +219,8 @@ function updateCamera ( position, quaternion ) {
 
 function caveCanvasResize ( width, height ) {
 	console.log(width, height);
-	caveCanvas
+	caveCanvas.width = width;
+	caveCanvas.height = height;
 }
 
 
