@@ -31,16 +31,21 @@ function handleMessage ( message ) {
 		console.log("caveCanvasResize")
 		caveCanvasResize(message.data.width, message.data.height);
 	}
+	if(message.data.type === "flipEyes") {
+		console.log("flipEyes")
+		flipEyes();
+	}
 }
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0Xeeeeee);
+scene.background = new THREE.Color(0x000000);
 const camera = new THREE.PerspectiveCamera( 50, 4/3, 0.01, 50 );
 
 
 const trackedCamera = new THREE.PerspectiveCamera( 50, 1.5, 0.01, 0.3 );
 const trackedCameraHelper = new THREE.CameraHelper(trackedCamera);
 scene.add(trackedCameraHelper);
+
 
 const PDS = Math.sqrt(2) * 1.8;
 const t = new THREE.Vector3(1, 1, 0).normalize().multiplyScalar(2.25);
@@ -75,6 +80,7 @@ const cave = new Cave(screens);
 const stereoCameras = cave.stereoScreenCameras;
 const caveHelper = new CaveHelper(cave);
 scene.add(caveHelper)
+caveHelper.hideStereoScreenCameraHelpers()
 
 const textureWidth = 2048;
 const textureHeight = 2048;
@@ -121,6 +127,28 @@ for( const face of ["x", "y", "z"] ) {
 }
 
 
+const gridHelperTable = new THREE.GridHelper(10, 10, 0xAAAA00, 0xAAAA00);
+gridHelperTable.position.set(0, -0.125, 0)
+const tableGroup = new THREE.Group;
+const tablewire = new THREE.LineSegments(
+	new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.35, 0.6, 0.25, 8, 1)),
+	new THREE.LineBasicMaterial({color: 0XAAAA00, linewidth: 3})
+);
+const table = new THREE.Mesh(
+	new THREE.CylinderGeometry(0.3499, 0.5999, 0.2499, 8, 1),
+	new THREE.MeshBasicMaterial({color: 0X000000, polygonOffset:10.5})
+);
+tableGroup.add(table, tablewire)
+tableGroup.add(gridHelperTable);
+
+tableGroup.rotateX(Math.PI/2)
+scene.add(tableGroup)
+tableGroup.position.y += 1.25;
+tableGroup.position.z += 0.125;
+
+
+
+holoCube.viewScale = {x: 4, y: 5, z:6}
 const holoCubeDisplayL = new HoloCubeDisplay( holoCube, screenTexturesL );
 const holoCubeDisplayR = new HoloCubeDisplay( holoCube, screenTexturesR );
 holoCubeDisplayL.update();
@@ -175,6 +203,7 @@ function initRenderer ( canvas ) {
 			camera.layers.disable(1);
 		}
 		renderLeft = !renderLeft;
+		scene.background = new THREE.Color(0xaaaaaa);
 
 		renderer.render(scene, camera);
 
@@ -202,12 +231,17 @@ function initCaveRenderer ( canvas ) {
 		const viewWidth = canvas.width / 3;
 		const viewHeight = canvas.height;
 
-
+		caveHelper.visible = false;
+		trackedCameraHelper.visible = false;
+		scene.background = new THREE.Color(0x000000);
+		
 		for( let i = 0; i < 3; ++i ) {
 			caveRenderer.setViewport(i * viewWidth, 0, viewWidth, viewHeight);
 			caveRenderer.setScissor(i * viewWidth, 0, viewWidth, viewHeight);
 			caveRenderer.render(scene, stereoCameras[i][side]);
 		}
+		caveHelper.visible = true;
+		trackedCameraHelper.visible = true;
 	})
 }
 
@@ -223,5 +257,8 @@ function caveCanvasResize ( width, height ) {
 	caveCanvas.height = height;
 }
 
+function flipEyes ( ) {
+	renderLeft = !renderLeft;
+}
 
-
+vrpnController.connect();

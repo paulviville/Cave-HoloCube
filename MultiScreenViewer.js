@@ -53,6 +53,10 @@ export default class MultiScreenViewer {
 			},
 			onResize: ( ) => {
 				this.#worker.postMessage({ type: "caveCanvasResize", width: this.#caveWindow.width, height: this.#caveWindow.height } );
+			},
+			onMouseUp: ( ) => {
+				console.log("clicked")
+				this.#worker.postMessage({ type: "flipEyes" } );
 			}
 		});
 		this.#caveWindow.open();

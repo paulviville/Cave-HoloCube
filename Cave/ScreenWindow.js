@@ -8,7 +8,7 @@ export default class ScreenWindow {
 		this.#callbackFuncs = callbackFuncs;
 	}
 
-	#onLoad ( onLoad ) {
+	#onLoad ( ) {
 		this.#canvas = this.#window.document.createElement('canvas');
 		this.#window.document.body.appendChild(this.#canvas);
 		this.#canvas.width = this.#window.innerWidth;
@@ -22,10 +22,16 @@ export default class ScreenWindow {
 		this.#callbackFuncs.onResize?.();
 	}
 
+	#onMouseUp ( ) {
+
+		this.#callbackFuncs.onMouseUp?.();
+	}
+
 	open ( ) {
 		this.#window = window.open(`./Cave/screen.html`, "", "width=800, height=500");
 		this.#window.addEventListener("load", this.#onLoad.bind( this ));
 		this.#window.addEventListener("resize", this.#onResize.bind( this ));
+		this.#window.addEventListener("mouseup", this.#onMouseUp.bind( this ));
 	}
 
 	setOnMouseDown ( onMouseDown ) {
